@@ -9,6 +9,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
+import i.solonin.model.Error;
 import i.solonin.model.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static i.solonin.Utils.*;
 
 public class FilesComparator {
@@ -37,6 +39,7 @@ public class FilesComparator {
         this.client = client;
         mapper = new ObjectMapper();
         mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
+        mapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
@@ -98,6 +101,10 @@ public class FilesComparator {
             }
         }
         List<String> strings = translate(toTranslate.stream().map(StringWithPosition::getValue).collect(Collectors.toList()), f.getName());
+        if (strings.size() != toTranslate.size()) {
+            log.error("Translated strings is not equals with required");
+            return result;
+        }
         for (int i = 0, stringsSize = strings.size(); i < stringsSize; i++) {
             try {
                 String translate = strings.get(i);
@@ -123,8 +130,11 @@ public class FilesComparator {
                         .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(new TranslateRequest(fileName, texts)), StandardCharsets.UTF_8))
                         .build();
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                if (response.statusCode() != 200)
-                    continue;
+                if (response.statusCode() != 200) {
+                    Error error = mapper.readValue(response.body(), Error.class);
+                    NotificationUtils.show(project, "Yandex can't translate: " + error.getMessage(), NotificationType.ERROR);
+                    return result;
+                }
                 TranslateResponse translateResponse = mapper.readValue(response.body(), TranslateResponse.class);
                 result.addAll(translateResponse.getTranslations().stream().map(Text::getText).collect(Collectors.toList()));
             }

@@ -1,6 +1,5 @@
 package i.solonin.model;
 
-import com.intellij.openapi.vfs.VirtualFile;
 import lombok.Getter;
 import lombok.Setter;
 

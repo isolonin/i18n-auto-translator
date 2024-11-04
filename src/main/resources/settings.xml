@@ -1,6 +1,0 @@
-<panel>
-    <label text="Идентификатор ключа:"/>
-    <textField id="yandexKey" />
-    <label text="Ваш секретный ключ:"/>
-    <textField id="yandexSecretKey" />
-</panel>

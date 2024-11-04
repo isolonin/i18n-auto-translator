@@ -23,5 +23,6 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="i18n-auto-translator-notifications" displayType="BALLOON" />
+        <postStartupActivity implementation="i.solonin.PostStartupActivity"/>
     </extensions>
 </idea-plugin>

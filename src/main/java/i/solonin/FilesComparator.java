@@ -5,19 +5,14 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
-import i.solonin.model.Settings;
-import i.solonin.model.Text;
-import i.solonin.model.TranslateRequest;
-import i.solonin.model.TranslateResponse;
-import lombok.AllArgsConstructor;
+import i.solonin.model.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,7 +21,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static i.solonin.Utils.*;
+
 public class FilesComparator {
+    private static final Logger log = Logger.getInstance(FilesComparator.class);
     private final static int TRANSLATE_LIMIT = 10000;
     private final Project project;
     private final Settings settings;
@@ -53,17 +51,18 @@ public class FilesComparator {
                 List<String> origin = content(file);
                 for (VirtualFile f : files) {
                     try {
-                        List<String> localization = content(f);
-                        //fill translate cache base of existed localization values
-                        fillCache(origin, localization, f.getName());
-
+                        log.info("Start process file " + file.getName());
                         result.put(f, process(origin, f));
                     } catch (Exception e) {
-                        NotificationUtils.showError(project, e.getMessage(), NotificationType.ERROR);
+                        NotificationUtils.show(project, e.getMessage(), NotificationType.ERROR);
+                        log.error(e.getMessage());
+                    } finally {
+                        log.info("End process file " + file.getName());
                     }
                 }
             } catch (Exception e) {
-                NotificationUtils.showError(project, e.getMessage(), NotificationType.ERROR);
+                NotificationUtils.show(project, e.getMessage(), NotificationType.ERROR);
+                log.error(e.getMessage());
             }
             return result;
         });
@@ -73,10 +72,10 @@ public class FilesComparator {
                 if (f.isWritable()) {
                     f.setBinaryContent(String.join("\n", strings).getBytes(StandardCharsets.UTF_8));
                 } else {
-                    System.out.println("Can't write file " + file.getName());
+                    log.error("Can't write file " + f.getName());
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Can't write file " + f.getName() + ": " + e.getMessage());
             }
         }));
     }
@@ -88,40 +87,29 @@ public class FilesComparator {
             String s = origin.get(i);
             Pair pair = pair(s);
             if (pair != null) {
-                String translate = settings.translateCache.get(f.getName(), pair.value);
+                String translate = settings.translateCache.getByKey(f.getName(), pair.getKey(), pair.getValue());
                 if (translate == null)
-                    toTranslate.add(new StringWithPosition(i, pair.value));
-                if (translate != null)
-                    settings.translateCache.put(f.getName(), pair.value, translate);
-                result.add(pair.key + "=" + (translate == null ? "" : translate));
+                    translate = settings.translateCache.getByValue(f.getName(), pair.getValue());
+                if (translate == null)
+                    toTranslate.add(new StringWithPosition(i, pair.getValue()));
+                result.add(pair.getKey() + "=" + (translate == null ? "" : translate));
             } else {
                 result.add(s);
             }
         }
-        List<String> strings = translate(toTranslate.stream().map(s -> s.value).collect(Collectors.toList()), f.getName());
+        List<String> strings = translate(toTranslate.stream().map(StringWithPosition::getValue).collect(Collectors.toList()), f.getName());
         for (int i = 0, stringsSize = strings.size(); i < stringsSize; i++) {
             try {
                 String translate = strings.get(i);
                 StringWithPosition stringWithPosition = toTranslate.get(i);
-                String keyValue = result.get(stringWithPosition.position);
-                Pair pair = pair(keyValue);
-                result.set(stringWithPosition.position, keyValue.replaceFirst("(.*)=.*", "$1=" + translate));
-                settings.translateCache.put(f.getName(), pair.value, translate);
+                String key = result.get(stringWithPosition.getPosition());
+                result.set(stringWithPosition.getPosition(), key + translate);
+                settings.translateCache.putAsValue(f.getName(), toTranslate.get(i).getValue(), translate);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
         }
         return result;
-    }
-
-    private void fillCache(List<String> origin, List<String> localization, String fileName) {
-        Map<String, String> m1 = toMap(origin);
-        Map<String, String> m2 = toMap(localization);
-        m1.forEach((k, v1) -> {
-            String v2 = m2.get(k);
-            if (v2 != null)
-                settings.translateCache.put(fileName, v1.trim(), v2.trim());
-        });
     }
 
     private @NotNull List<String> translate(List<String> list, String fileName) {
@@ -141,64 +129,8 @@ public class FilesComparator {
                 result.addAll(translateResponse.getTranslations().stream().map(Text::getText).collect(Collectors.toList()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return result;
-    }
-
-    public static List<List<String>> splitByCharacterLimit(List<String> strings, int limit) {
-        List<List<String>> result = new ArrayList<>();
-        List<String> temp = new ArrayList<>();
-        int currentLength = 0;
-
-        for (String str : strings) {
-            if (currentLength + str.length() > limit) {
-                result.add(new ArrayList<>(temp));
-                temp.clear();
-                currentLength = 0;
-            }
-            temp.add(str);
-            currentLength += str.length();
-        }
-        if (!temp.isEmpty())
-            result.add(temp);
-        return result;
-    }
-
-    private Pair pair(String line) {
-        String[] parts = line.split("=", 2);
-        if (parts.length == 2) {
-            String key = parts[0].trim();
-            String value = parts[1].trim();
-            return new Pair(key, value);
-        }
-        return null;
-    }
-
-    private Map<String, String> toMap(List<String> list) {
-        return list.stream().map(this::pair).filter(Objects::nonNull)
-                .collect(Collectors.toMap(p -> p.key, p -> p.value));
-    }
-
-    private List<String> content(VirtualFile file) throws IOException {
-        List<String> result = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-            String value;
-            while ((value = reader.readLine()) != null)
-                result.add(value);
-        }
-        return result;
-    }
-
-    @AllArgsConstructor
-    private static class Pair {
-        private String key;
-        private String value;
-    }
-
-    @AllArgsConstructor
-    private static class StringWithPosition {
-        private int position;
-        private String value;
     }
 }

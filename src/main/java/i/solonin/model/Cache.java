@@ -12,16 +12,29 @@ import java.util.Optional;
 public class Cache {
     public Map<String, Translate> data = new HashMap<>();
 
-    public void put(String fileName, String v1, String v2) {
+    public void putAsKey(String fileName, String key, String v1, String v2) {
         Translate translate = data.get(fileName);
         if (translate == null) {
             translate = new Translate();
             data.put(fileName, translate);
         }
-        translate.put(v1, v2);
+        translate.putLocal(key, v1, v2);
     }
 
-    public String get(String fileName, String value) {
-        return Optional.ofNullable(data.get(fileName)).map(t -> t.get(value)).orElse(null);
+    public void putAsValue(String fileName, String v1, String v2) {
+        Translate translate = data.get(fileName);
+        if (translate == null) {
+            translate = new Translate();
+            data.put(fileName, translate);
+        }
+        translate.putTranslate(v1, v2);
+    }
+
+    public String getByKey(String fileName, String key, String v1) {
+        return Optional.ofNullable(data.get(fileName)).map(t -> t.getByKey(key, v1)).orElse(null);
+    }
+
+    public String getByValue(String fileName, String value) {
+        return Optional.ofNullable(data.get(fileName)).map(t -> t.getByValue(value)).orElse(null);
     }
 }

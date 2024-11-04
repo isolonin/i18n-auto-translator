@@ -6,7 +6,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.project.Project;
 
 public class NotificationUtils {
-    public static void showError(Project project, String message, NotificationType type) {
+    public static void show(Project project, String message, NotificationType type) {
         Notification notification = NotificationGroupManager.getInstance()
                 .getNotificationGroup("i18n-auto-translator-notifications")
                 .createNotification(message, type);

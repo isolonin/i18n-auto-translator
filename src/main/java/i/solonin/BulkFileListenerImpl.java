@@ -11,17 +11,13 @@ import org.jetbrains.annotations.NotNull;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executors;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+
+import static i.solonin.Utils.*;
 
 
 public class BulkFileListenerImpl implements BulkFileListener {
-    private final static String ENG_MESSAGE_REGX = ".*messages\\.properties";
-    private final static String ANY_MESSAGE_REGX = "(.*messages\\.properties|.*messages_[^.]*\\.properties)";
     private final Settings settings;
     private final FilesComparator filesComparator;
 
@@ -42,15 +38,8 @@ public class BulkFileListenerImpl implements BulkFileListener {
 
         for (VFileEvent event : events) {
             VirtualFile file = event.getFile();
-            if (file != null && check(ENG_MESSAGE_REGX).test(file)) {
-                Set<VirtualFile> files = Arrays.stream(file.getParent().getChildren()).filter(check(ANY_MESSAGE_REGX))
-                        .filter(f -> !f.getName().equals(file.getName())).collect(Collectors.toSet());
-                filesComparator.process(file, files);
-            }
+            if (file != null && check(ENG_MESSAGE_REGX).test(file))
+                filesComparator.process(file, getLocalizationFiles(file));
         }
-    }
-
-    private Predicate<VirtualFile> check(String regx) {
-        return f -> f.getName().matches(regx);
     }
 }

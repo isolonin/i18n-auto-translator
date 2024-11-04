@@ -1,0 +1,27 @@
+<idea-plugin>
+    <id>i.solonin.i18n-auto-translator</id>
+    <name>I18n Auto Translator</name>
+    <vendor email="i.solonin@astarus.ru" url="https://astarus.ru">Ivan Solonin</vendor>
+
+    <description><![CDATA[
+    Automatic Update of Language-Messages Files Based on English
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="i.solonin.model.Settings"/>
+        <projectConfigurable instance="i.solonin.PluginConfigurable" displayName="I18n Auto Translator"/>
+    </extensions>
+
+    <projectListeners>
+        <listener class="i.solonin.BulkFileListenerImpl"
+                topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    </projectListeners>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="i18n-auto-translator-notifications" displayType="BALLOON" />
+    </extensions>
+</idea-plugin>

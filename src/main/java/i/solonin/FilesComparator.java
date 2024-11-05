@@ -102,7 +102,7 @@ public class FilesComparator {
         }
         List<String> strings = translate(toTranslate.stream().map(StringWithPosition::getValue).collect(Collectors.toList()), f.getName());
         if (strings.size() != toTranslate.size()) {
-            log.error("Translated strings is not equals with required");
+            log.warn("Translated strings is not equals with required");
             return result;
         }
         for (int i = 0, stringsSize = strings.size(); i < stringsSize; i++) {

@@ -15,7 +15,7 @@ public class TranslateRequest {
     private boolean speller;
 
     public TranslateRequest(String fileName, List<String> texts) {
-        this.targetLanguageCode = fileName.replaceFirst(".*_messages_([^.]*)\\.properties", "$1");
+        this.targetLanguageCode = fileName.replaceFirst(".*_?messages_([^.]*)\\.properties", "$1");
         this.texts = texts.toArray(new String[0]);
     }
 }

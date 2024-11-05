@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>i.solonin.i18n-auto-translator</id>
     <name>I18n Auto Translator</name>
-    <vendor email="i.solonin@astarus.ru" url="https://astarus.ru">Ivan Solonin</vendor>
+    <vendor email="ivan.solonin52@yandex.ru" url="email://ivan.solonin52@yandex.ru">Ivan Solonin</vendor>
 
     <description><![CDATA[
     Automatic Update of Language-Messages Files Based on English

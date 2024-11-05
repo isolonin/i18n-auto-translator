@@ -1,3 +1,5 @@
+# Localization files auto translator IDEA Plugin
+
 The purpose of the plugin is automatic translation of localization files via the Yandex translator API.
 
 Example:

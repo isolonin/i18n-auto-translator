@@ -1,7 +1,9 @@
-package i.solonin;
+package i.solonin.utils;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import i.solonin.model.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +14,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Utils {
+    private static final Logger log = Logger.getInstance(Utils.class);
+
     public final static String ANY_MESSAGE_REGX = "(.*messages\\.properties|.*messages_[^.]*\\.properties)";
     public final static String ENG_MESSAGE_REGX = ".*messages\\.properties";
 
@@ -72,4 +76,35 @@ public class Utils {
         return fileName.replaceFirst(".*_?messages_([^.]*)\\.properties", "$1");
     }
 
+    public static void fillLocal(@NotNull VirtualFile file, Map<String, Map<String, String>> localizationFilesContent) {
+        try {
+            Set<VirtualFile> localizationFiles = getLocalizationFiles(file);
+            List<String> origin = content(file);
+            for (VirtualFile f : localizationFiles) {
+                try {
+                    List<String> localization = content(f);
+                    //fill translate cache base of existed localization values
+                    fillLocal(origin, localization, f.getName(), localizationFilesContent);
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    public static void fillLocal(List<String> origin, List<String> localization, String fileName,
+                                 Map<String, Map<String, String>> localizationFilesContent) {
+//        localizationFilesContent.clear();
+        Map<String, String> m1 = toMap(origin);
+        Map<String, String> m2 = toMap(localization);
+        m1.forEach((key, v1) -> {
+            String v2 = m2.get(key);
+            if (v2 != null) {
+                Map<String, String> values = localizationFilesContent.computeIfAbsent(fileName, k -> new HashMap<>());
+                values.put(key + "=" + v1, v2);
+            }
+        });
+    }
 }

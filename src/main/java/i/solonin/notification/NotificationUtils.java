@@ -1,4 +1,4 @@
-package i.solonin;
+package i.solonin.notification;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroupManager;

@@ -5,7 +5,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-import static i.solonin.Utils.getLanguage;
+import static i.solonin.utils.Utils.getLanguage;
 
 @Getter
 @Setter

@@ -1,4 +1,4 @@
-package i.solonin;
+package i.solonin.gui;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.BaseConfigurable;

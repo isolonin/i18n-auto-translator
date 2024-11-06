@@ -1,4 +1,4 @@
-package i.solonin;
+package i.solonin.processor;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonParser;
@@ -11,6 +11,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import i.solonin.model.Error;
 import i.solonin.model.*;
+import i.solonin.notification.NotificationUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
-import static i.solonin.Utils.*;
+import static i.solonin.utils.Utils.*;
 
 public class FilesComparator {
     private static final Logger log = Logger.getInstance(FilesComparator.class);
@@ -47,7 +48,9 @@ public class FilesComparator {
                 .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
     }
 
-    public void process(VirtualFile file, Set<VirtualFile> files) {
+    public void process(VirtualFile file, Set<VirtualFile> files, Map<String, Map<String, String>> localizationFilesContent) {
+        if(localizationFilesContent.isEmpty()) return;
+
         Map<VirtualFile, List<String>> newContent = ApplicationManager.getApplication().runReadAction((Computable<Map<VirtualFile, List<String>>>) () -> {
             Map<VirtualFile, List<String>> result = new HashMap<>();
             try {
@@ -55,7 +58,9 @@ public class FilesComparator {
                 for (VirtualFile f : files) {
                     try {
                         log.info("Start process file " + file.getName());
-                        result.put(f, process(origin, f));
+                        Map<String, String> localization = localizationFilesContent.get(f.getName());
+                        if (localization == null) continue;
+                        result.put(f, process(origin, f, localization));
                     } catch (Exception e) {
                         NotificationUtils.show(project, e.getMessage(), NotificationType.ERROR);
                         log.error(e.getMessage());
@@ -83,7 +88,7 @@ public class FilesComparator {
         }));
     }
 
-    private List<String> process(List<String> origin, VirtualFile f) {
+    private List<String> process(List<String> origin, VirtualFile f, Map<String, String> local) {
         String language = getLanguage(f.getName());
         List<String> result = new ArrayList<>();
         List<StringWithPosition> toTranslate = new ArrayList<>();
@@ -91,7 +96,7 @@ public class FilesComparator {
             String s = origin.get(i);
             Pair pair = pair(s);
             if (pair != null) {
-                String translate = settings.getByLocal(f.getName(), pair.getKey(), pair.getValue());
+                String translate = local.get(pair.getKey() + "=" + pair.getValue());
                 if (translate == null)
                     translate = settings.getByTranslated(language, pair.getValue());
                 if (translate == null)

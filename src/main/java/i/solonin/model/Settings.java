@@ -27,7 +27,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public long httpTimeout = 1000L;
     public String yandexSecretKey;
     @Transient
-    public Map<String, Map<String, String>> local = new HashMap<>();
+    public transient Map<String, Map<String, String>> local = new HashMap<>();
     public Cache cache = new Cache();
 
     @Override

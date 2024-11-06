@@ -32,19 +32,19 @@ public class PostStartupActivity implements StartupActivity, DumbAware {
     public void runActivity(@NotNull Project project) {
         for (FileEditor fileEditor : FileEditorManager.getInstance(project).getAllEditors()) {
             if (fileEditor.getFile() != null)
-                fillCache(fileEditor.getFile());
+                fillLocalCache(fileEditor.getFile());
         }
 
         project.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
             @Override
             public void fileOpened(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
                 FileEditorManagerListener.super.fileOpened(source, file);
-                fillCache(file);
+                fillLocalCache(file);
             }
         });
     }
 
-    private void fillCache(@NotNull VirtualFile file) {
+    private void fillLocalCache(@NotNull VirtualFile file) {
         if (!check(ENG_MESSAGE_REGX).test(file)) return;
 
         try {
@@ -54,7 +54,7 @@ public class PostStartupActivity implements StartupActivity, DumbAware {
                 try {
                     List<String> localization = content(f);
                     //fill translate cache base of existed localization values
-                    fillCache(origin, localization, f.getName());
+                    fillLocalCache(origin, localization, f.getName());
                 } catch (Exception e) {
                     log.error(e.getMessage());
                 }
@@ -64,13 +64,13 @@ public class PostStartupActivity implements StartupActivity, DumbAware {
         }
     }
 
-    private void fillCache(List<String> origin, List<String> localization, String fileName) {
+    private void fillLocalCache(List<String> origin, List<String> localization, String fileName) {
         Map<String, String> m1 = toMap(origin);
         Map<String, String> m2 = toMap(localization);
         m1.forEach((k, v1) -> {
             String v2 = m2.get(k);
             if (v2 != null)
-                settings.translateCache.putAsKey(fileName, k, v1.trim(), v2.trim());
+                settings.putAsLocal(fileName, k, v1.trim(), v2.trim());
         });
     }
 }

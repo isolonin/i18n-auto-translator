@@ -67,4 +67,9 @@ public class Utils {
     public static Predicate<VirtualFile> check(String regx) {
         return f -> f.getName().matches(regx);
     }
+
+    public static String getLanguage(String fileName) {
+        return fileName.replaceFirst(".*_?messages_([^.]*)\\.properties", "$1");
+    }
+
 }

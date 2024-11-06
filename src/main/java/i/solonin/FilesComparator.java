@@ -84,15 +84,16 @@ public class FilesComparator {
     }
 
     private List<String> process(List<String> origin, VirtualFile f) {
+        String language = getLanguage(f.getName());
         List<String> result = new ArrayList<>();
         List<StringWithPosition> toTranslate = new ArrayList<>();
         for (int i = 0, originSize = origin.size(); i < originSize; i++) {
             String s = origin.get(i);
             Pair pair = pair(s);
             if (pair != null) {
-                String translate = settings.translateCache.getByKey(f.getName(), pair.getKey(), pair.getValue());
+                String translate = settings.getByLocal(f.getName(), pair.getKey(), pair.getValue());
                 if (translate == null)
-                    translate = settings.translateCache.getByValue(f.getName(), pair.getValue());
+                    translate = settings.getByTranslated(language, pair.getValue());
                 if (translate == null)
                     toTranslate.add(new StringWithPosition(i, pair.getValue()));
                 result.add(pair.getKey() + "=" + (translate == null ? "" : translate));
@@ -111,7 +112,8 @@ public class FilesComparator {
                 StringWithPosition stringWithPosition = toTranslate.get(i);
                 String key = result.get(stringWithPosition.getPosition());
                 result.set(stringWithPosition.getPosition(), key + translate);
-                settings.translateCache.putAsValue(f.getName(), toTranslate.get(i).getValue(), translate);
+                if (translate != null && !translate.isEmpty())
+                    settings.putAsTranslated(language, toTranslate.get(i).getValue(), translate);
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
@@ -122,6 +124,7 @@ public class FilesComparator {
     private @NotNull List<String> translate(List<String> list, String fileName) {
         List<String> result = new ArrayList<>();
         try {
+            log.info("Try to translate " + list.size() + " words");
             for (List<String> texts : splitByCharacterLimit(list, TRANSLATE_LIMIT)) {
                 var request = HttpRequest.newBuilder()
                         .uri(new URI("https://translate.api.cloud.yandex.net/translate/v2/translate"))
@@ -140,6 +143,8 @@ public class FilesComparator {
             }
         } catch (Exception e) {
             log.error(e.getMessage());
+        } finally {
+            log.info("Translate is done");
         }
         return result;
     }

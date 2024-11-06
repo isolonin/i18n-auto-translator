@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.util.List;
 
+import static i.solonin.Utils.getLanguage;
+
 @Getter
 @Setter
 public class TranslateRequest {
@@ -15,7 +17,7 @@ public class TranslateRequest {
     private boolean speller;
 
     public TranslateRequest(String fileName, List<String> texts) {
-        this.targetLanguageCode = fileName.replaceFirst(".*_?messages_([^.]*)\\.properties", "$1");
+        this.targetLanguageCode = getLanguage(fileName);
         this.texts = texts.toArray(new String[0]);
     }
 }

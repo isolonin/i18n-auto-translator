@@ -4,6 +4,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import com.intellij.util.xmlb.annotations.Transient;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +26,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public int httpPool = 10;
     public long httpTimeout = 1000L;
     public String yandexSecretKey;
-    public transient Map<String, Map<String, String>> local = new HashMap<>();
+    @Transient
+    public Map<String, Map<String, String>> local = new HashMap<>();
     public Cache cache = new Cache();
 
     @Override

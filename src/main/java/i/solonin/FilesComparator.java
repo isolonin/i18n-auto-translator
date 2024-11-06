@@ -124,7 +124,8 @@ public class FilesComparator {
     private @NotNull List<String> translate(List<String> list, String fileName) {
         List<String> result = new ArrayList<>();
         try {
-            log.info("Try to translate " + list.size() + " words");
+            if (!list.isEmpty())
+                log.info("Try to translate " + list.size() + " words");
             for (List<String> texts : splitByCharacterLimit(list, TRANSLATE_LIMIT)) {
                 var request = HttpRequest.newBuilder()
                         .uri(new URI("https://translate.api.cloud.yandex.net/translate/v2/translate"))

@@ -68,9 +68,8 @@ public final class MainService implements BulkFileListener {
         for (VFileEvent event : events) {
             VirtualFile file = event.getFile();
             if (file != null && check(ENG_MESSAGE_REGX).test(file)) {
-                if (localizationFilesContent.isEmpty())
-                    fillLocal(file);
-                filesComparator.process(file, getLocalizationFiles(file), localizationFilesContent);
+                if (!localizationFilesContent.isEmpty())
+                    filesComparator.process(file, getLocalizationFiles(file), localizationFilesContent);
             }
         }
     }

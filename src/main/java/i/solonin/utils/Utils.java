@@ -96,7 +96,7 @@ public class Utils {
 
     public static void fillLocal(List<String> origin, List<String> localization, String fileName,
                                  Map<String, Map<String, String>> localizationFilesContent) {
-//        localizationFilesContent.clear();
+        localizationFilesContent.clear();
         Map<String, String> m1 = toMap(origin);
         Map<String, String> m2 = toMap(localization);
         m1.forEach((key, v1) -> {

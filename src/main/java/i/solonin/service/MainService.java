@@ -18,9 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 import static i.solonin.utils.Utils.*;
@@ -29,10 +27,12 @@ import static i.solonin.utils.Utils.*;
 public final class MainService implements BulkFileListener {
     private static final Logger log = Logger.getInstance(MainService.class);
     private final Map<String, Map<String, String>> localizationFilesContent = new HashMap<>();
+    private final Project project;
     private final Settings settings;
     private final FilesComparator filesComparator;
 
     public MainService(Project project) {
+        this.project = project;
         this.settings = ServiceManager.getService(Settings.class);
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
@@ -49,6 +49,12 @@ public final class MainService implements BulkFileListener {
                 FileEditorManagerListener.super.fileOpened(source, file);
                 fillLocal(file);
             }
+
+            @Override
+            public void fileClosed(@NotNull FileEditorManager source, @NotNull VirtualFile file) {
+                FileEditorManagerListener.super.fileClosed(source, file);
+                clearLocal(file);
+            }
         });
 
         this.filesComparator = new FilesComparator(project, settings, client);
@@ -60,6 +66,12 @@ public final class MainService implements BulkFileListener {
         Utils.fillLocal(file, localizationFilesContent);
     }
 
+    private void clearLocal(@NotNull VirtualFile file) {
+        if (!check(ENG_MESSAGE_REGX).test(file) || settings.isDisabled()) return;
+        log.info("Clear " + file.getName() + " content");
+        localizationFilesContent.clear();
+    }
+
     @Override
     public void after(@NotNull List<? extends @NotNull VFileEvent> events) {
         BulkFileListener.super.after(events);
@@ -68,9 +80,16 @@ public final class MainService implements BulkFileListener {
         for (VFileEvent event : events) {
             VirtualFile file = event.getFile();
             if (file != null && check(ENG_MESSAGE_REGX).test(file)) {
-                if (!localizationFilesContent.isEmpty())
-                    filesComparator.process(file, getLocalizationFiles(file), localizationFilesContent);
+                if (!isFIleOpenInEditor(file))
+                    continue;
+                if (localizationFilesContent.isEmpty())
+                    continue;
+                filesComparator.process(file, getLocalizationFiles(file), localizationFilesContent);
             }
         }
+    }
+
+    private boolean isFIleOpenInEditor(@NotNull VirtualFile file) {
+        return Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).anyMatch(e -> Objects.equals(e.getFile(), file));
     }
 }

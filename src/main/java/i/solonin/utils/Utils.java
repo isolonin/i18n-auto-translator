@@ -80,6 +80,7 @@ public class Utils {
         try {
             Set<VirtualFile> localizationFiles = getLocalizationFiles(file);
             List<String> origin = content(file);
+            localizationFilesContent.clear();
             for (VirtualFile f : localizationFiles) {
                 try {
                     List<String> localization = content(f);
@@ -96,7 +97,6 @@ public class Utils {
 
     public static void fillLocal(List<String> origin, List<String> localization, String fileName,
                                  Map<String, Map<String, String>> localizationFilesContent) {
-        localizationFilesContent.clear();
         Map<String, String> m1 = toMap(origin);
         Map<String, String> m2 = toMap(localization);
         m1.forEach((key, v1) -> {

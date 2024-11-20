@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'i.solonin'
-version '1.5'
+version '1.6'
 
 repositories {
     mavenCentral()
@@ -29,6 +29,7 @@ patchPluginXml {
         <li>1.3. Don't persist local cache</li>
         <li>1.4. Don't change anything until english messages file don't open</li>
         <li>1.5. To avoid issue with unexpected changes, change file only if english file is open</li>
+        <li>1.6. Fixed issue with open multiple files</li>
     </ul>
       """
 }

@@ -64,7 +64,8 @@ public class Utils {
     }
 
     public static Set<VirtualFile> getLocalizationFiles(VirtualFile file) {
-        return Arrays.stream(file.getParent().getChildren()).filter(check(ANY_MESSAGE_REGX))
+        return Arrays.stream(Optional.ofNullable(file.getParent()).map(VirtualFile::getChildren).orElse(new VirtualFile[0]))
+                .filter(check(ANY_MESSAGE_REGX))
                 .filter(f -> !f.getName().equals(file.getName())).collect(Collectors.toSet());
     }
 

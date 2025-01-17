@@ -3,6 +3,8 @@
     <name>I18n Auto Translator</name>
     <vendor email="ivan.solonin52@yandex.ru" url="email://ivan.solonin52@yandex.ru">Ivan Solonin</vendor>
 
+    <idea-version since-build="212" until-build="223.*"/>
+
     <description><![CDATA[
     Automatic Update of Language-Messages Files Based on English
     ]]></description>

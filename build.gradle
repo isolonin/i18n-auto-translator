@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'i.solonin'
-version '1.8'
+version '1.9'
 
 repositories {
     mavenCentral()
@@ -23,14 +23,14 @@ intellij {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 
 patchPluginXml {
     sinceBuild.set("213")
-    untilBuild.set("223.*")
+    untilBuild.set("999.*")
     changeNotes = """
     <ul>
         <li>1.1. Initial version</li>
@@ -41,6 +41,7 @@ patchPluginXml {
         <li>1.6. Fixed issue with open multiple files</li>
         <li>1.7. Fixed issue with NPE</li>
         <li>1.8. IDE versions defined</li>
+        <li>1.9. Rermove Idea version restrict</li>
     </ul>
       """
 }

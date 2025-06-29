@@ -1,5 +1,6 @@
 package i.solonin.service;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -7,6 +8,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
@@ -24,7 +26,7 @@ import java.util.concurrent.Executors;
 import static i.solonin.utils.Utils.*;
 
 @Service(Service.Level.PROJECT)
-public final class MainService implements BulkFileListener {
+public final class MainService implements BulkFileListener, StartupActivity {
     private static final Logger log = Logger.getInstance(MainService.class);
     private final Map<String, Map<String, String>> localizationFilesContent = new HashMap<>();
     private final Project project;
@@ -40,6 +42,12 @@ public final class MainService implements BulkFileListener {
                 .connectTimeout(Duration.of(settings.httpTimeout, ChronoUnit.MILLIS))
                 .build();
         log.info("Start i18n-auto-translator plugin");
+        this.filesComparator = new FilesComparator(project, settings, client);
+
+        ApplicationManager.getApplication().invokeLater(this::initFileListeners);
+    }
+
+    private void initFileListeners() {
         for (FileEditor fileEditor : FileEditorManager.getInstance(project).getAllEditors())
             if (fileEditor.getFile() != null)
                 fillLocal(fileEditor.getFile());
@@ -56,8 +64,6 @@ public final class MainService implements BulkFileListener {
                 clearLocal(file);
             }
         });
-
-        this.filesComparator = new FilesComparator(project, settings, client);
     }
 
     private void fillLocal(@NotNull VirtualFile file) {
@@ -91,5 +97,10 @@ public final class MainService implements BulkFileListener {
 
     private boolean isFIleOpenInEditor(@NotNull VirtualFile file) {
         return Arrays.stream(FileEditorManager.getInstance(project).getAllEditors()).anyMatch(e -> Objects.equals(e.getFile(), file));
+    }
+
+    @Override
+    public void runActivity(@NotNull Project project) {
+
     }
 }

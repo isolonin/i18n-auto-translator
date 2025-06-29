@@ -24,6 +24,5 @@
     </projectListeners>
 
     <extensions defaultExtensionNs="com.intellij">
-
     </extensions>
 </idea-plugin>

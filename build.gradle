@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'i.solonin'
-version '1.9'
+version '2.0'
 
 repositories {
     mavenCentral()
@@ -13,8 +13,8 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-    compileOnly 'org.projectlombok:lombok:1.18.28'
-    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -42,6 +42,7 @@ patchPluginXml {
         <li>1.7. Fixed issue with NPE</li>
         <li>1.8. IDE versions defined</li>
         <li>1.9. Rermove Idea version restrict</li>
+        <li>2.0. Fixed Recursive update issue</li>
     </ul>
       """
 }

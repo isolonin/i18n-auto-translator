@@ -17,6 +17,9 @@
         <notificationGroup id="i18n-auto-translator-notifications" displayType="BALLOON"/>
         <applicationService serviceImplementation="i.solonin.model.Settings"/>
         <projectConfigurable instance="i.solonin.gui.PluginConfigurable" displayName="I18n Auto Translator"/>
+
+        <projectService serviceImplementation="i.solonin.service.MainService"/>
+        <projectManagerListener implementation="i.solonin.service.ProjectLoadListener"/>
     </extensions>
 
     <projectListeners>

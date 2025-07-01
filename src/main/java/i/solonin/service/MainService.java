@@ -1,5 +1,6 @@
 package i.solonin.service;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -34,7 +35,7 @@ public final class MainService implements BulkFileListener, StartupActivity {
 
     public MainService(Project project) {
         this.project = project;
-        this.settings = ServiceManager.getService(Settings.class);
+        this.settings = ApplicationManager.getApplication().getService(Settings.class);
         HttpClient client = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
                 .executor(Executors.newFixedThreadPool(settings.httpPool))
@@ -42,6 +43,11 @@ public final class MainService implements BulkFileListener, StartupActivity {
                 .build();
         log.info("Start i18n-auto-translator plugin");
         this.filesComparator = new FilesComparator(project, settings, client);
+    }
+
+    @Override
+    public void before(@NotNull List<? extends @NotNull VFileEvent> events) {
+        initFileListeners();
     }
 
     public void initFileListeners() {

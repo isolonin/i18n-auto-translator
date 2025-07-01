@@ -19,13 +19,9 @@
         <projectConfigurable instance="i.solonin.gui.PluginConfigurable" displayName="I18n Auto Translator"/>
 
         <projectService serviceImplementation="i.solonin.service.MainService"/>
-        <projectManagerListener implementation="i.solonin.service.ProjectLoadListener"/>
     </extensions>
 
     <projectListeners>
         <listener class="i.solonin.service.MainService" topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
     </projectListeners>
-
-    <extensions defaultExtensionNs="com.intellij">
-    </extensions>
 </idea-plugin>

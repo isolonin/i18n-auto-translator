@@ -14,9 +14,11 @@ import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import java.util.Objects;
 import java.util.Optional;
+import com.intellij.openapi.components.Service;
 
 @Getter
 @Setter
+@Service
 @State(name = "i18nPluginSettings", storages = @Storage("i18n-auto-translator.xml"))
 public class Settings implements PersistentStateComponent<Settings> {
     public boolean active;
@@ -61,3 +63,4 @@ public class Settings implements PersistentStateComponent<Settings> {
         return Optional.ofNullable(cache.data.get(language)).map(t -> t.get(value)).orElse(null);
     }
 }
+

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'i.solonin'
-version '2.0.2'
+version '2.0.3'
 
 repositories {
     mavenCentral()
@@ -43,6 +43,7 @@ patchPluginXml {
         <li>1.8. IDE versions defined</li>
         <li>1.9. Rermove Idea version restrict</li>
         <li>2.0. Fixed Recursive update issue</li>
+        <li>2.0.3 Fixed Duplicate key issue</li>
     </ul>
       """
 }

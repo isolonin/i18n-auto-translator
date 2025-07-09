@@ -49,8 +49,14 @@ public class Utils {
     }
 
     public static Map<String, String> toMap(List<String> list) {
-        return list.stream().map(Utils::pair).filter(Objects::nonNull)
-                .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        return list.stream()
+                .map(Utils::pair)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(
+                        Pair::getKey,
+                        Pair::getValue,
+                        (existing, replacement) -> existing
+                ));
     }
 
     public static List<String> content(VirtualFile file) throws IOException {
